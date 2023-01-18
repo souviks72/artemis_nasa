@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/souviks72/artemis_nasa/issues"
   },
-  "homepage": "https://github.com/souviks72/artemis_nasa#readme"
+  "homepage": "https://github.com/souviks72/artemis_nasa#readme",
+  "dependencies": {
+    "morgan": "^1.10.0"
+  }
 }
