@@ -1,0 +1,9 @@
+"watch": "npm run server && npm run client"
+&& --> waits for first command to stop running and only then runs the second command
+
+"watch": "npm run server & npm run client"
+& --> runs all cmds simultaneously
+
+"server": "npm run watch --prefix server"
+prefix refers to the folder in which to go and exec the cmd, same as:
+cd server && npm run watch
