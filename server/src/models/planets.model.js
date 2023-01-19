@@ -22,7 +22,7 @@ function loadPlanetsData() {
     )
       .pipe(
         parse({
-          //pipe connects are readable stream(fs.createReadStream) to a writeable stream(parse())
+          //pipe connects a readable stream(fs.createReadStream) to a writeable stream(parse())
           comment: "#",
           columns: true,
         })
@@ -32,7 +32,7 @@ function loadPlanetsData() {
           results.push(chunk);
         }
       })
-      .on("eror", (err) => {
+      .on("error", (err) => {
         console.log(err);
         reject(err);
       })
