@@ -14,8 +14,10 @@ app.use(
 );
 app.use(morgan("combined"));
 
-app.use(express.json());
-app.use(planetsRouter);
-app.use(launchesRouter);
+app.use(express.json()); //allows express to accept request body in json format
+//data is available on req.body object
+
+app.use("/planets", planetsRouter);
+app.use("/launches", launchesRouter);
 
 module.exports = app;
