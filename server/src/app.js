@@ -22,6 +22,7 @@ app.use(planetsRouter);
 app.use(launchesRouter);
 //client side routing
 //whenever express gets a route that it does not have, it passes that on to react/client
+//this works because of html5 history object
 app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "build", "index.html"));
 });
