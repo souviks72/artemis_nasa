@@ -27,7 +27,7 @@ function httpAddNewLaunch(req, res) {
     !launch.launchDate
   ) {
     return res.status(400).json({
-      error: "mMissing required launch properties",
+      error: "Missing required launch properties",
     });
   }
   launch.launchDate = new Date(launch.launchDate);

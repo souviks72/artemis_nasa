@@ -25,5 +25,8 @@
   "homepage": "https://github.com/souviks72/artemis_nasa#readme",
   "dependencies": {
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "jest": "^29.3.1"
   }
 }
