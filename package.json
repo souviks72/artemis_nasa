@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/souviks72/artemis_nasa#readme",
   "dependencies": {
+    "mongoose": "^6.9.1",
     "morgan": "^1.10.0"
   },
   "devDependencies": {

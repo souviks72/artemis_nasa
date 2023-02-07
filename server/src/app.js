@@ -21,3 +21,6 @@ app.use("/planets", planetsRouter);
 app.use("/launches", launchesRouter);
 
 module.exports = app;
+//udbNLfawyszn0oUM
+//mongo db password user: nasa_api
+//mongodb+srv://nasa_api:udbNLfawyszn0oUM@cluster0.n8jnlt1.mongodb.net/nasa?retryWrites=true&w=majority

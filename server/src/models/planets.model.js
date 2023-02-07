@@ -2,7 +2,7 @@ const { parse } = require("csv-parse");
 const fs = require("fs");
 const path = require("path");
 
-const results = [];
+const planets = require("./planets.mongo");
 
 function isHabitablePlanet(planet) {
   return (
@@ -27,24 +27,58 @@ function loadPlanetsData() {
           columns: true,
         })
       )
-      .on("data", (chunk) => {
+      .on("data", async (chunk) => {
         if (isHabitablePlanet(chunk)) {
-          results.push(chunk);
+          savePlanet(chunk);
         }
       })
       .on("error", (err) => {
         console.log(err);
         reject(err);
       })
-      .on("end", () => {
-        //console.log(results);
+      .on("end", async () => {
+        const countPlanetsFound = (await getAllPlanets()).length;
+        console.log(`${countPlanetsFound} habitable planets found`);
         resolve();
       });
   });
 }
 
-function getAllPlanets() {
-  return results;
+async function getAllPlanets() {
+  return await planets.find({}); //all docs will be returned if search obj is empty
+}
+/*
+  We can also find data by certain criteria and use projections to return specific fields from the entire doc
+  eg:
+  planets.find({
+    keplerName: "kepler 1A",  
+  }, {
+    keplerName: 1,
+    someField: 0
+  })
+
+  - the first obj has criteria while the second obj has projections
+  - if value is 1 the field will be returned, if 0, it will be excluded
+  - We can also pass a space seperated string, field names starting with "-" will be excluded
+  - eg: "keplerName -someFieldToBeExcluded"
+  */
+
+async function savePlanet(planetData) {
+  try {
+    await planets.updateOne(
+      {
+        keplerName: planetData.kepler_name,
+      },
+      {
+        keplerName: planetData.kepler_name,
+      },
+      {
+        upsert: true,
+      } //first obj is filter, second for update data, if upsert: true
+    );
+  } catch (err) {
+    console.error(`Could not save planet data: ${err}`);
+  }
 }
 
 module.exports = {
