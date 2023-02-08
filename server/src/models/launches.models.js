@@ -1,4 +1,7 @@
-//const launches = require("./launches.mongo");
+const launchesDb = require("./launches.mongo");
+const planets = require("./planets.mongo");
+
+const DEFAULT_FLIGHT_NUMBER = 100;
 
 const launches = new Map();
 
@@ -9,13 +12,14 @@ const launch = {
   mission: "Kepler Exploration X",
   rocket: "Exploer IS1",
   launchDate: new Date("December 27, 2030"),
-  destination: "Kepler-442 b",
-  customer: ["ZTM", "NASA"],
+  target: "Kepler-442 b",
+  customers: ["ZTM", "NASA"],
   upcoming: true,
   success: true,
 };
 
-launches.set(launch.flightNumber, launch);
+//launches.set(launch.flightNumber, launch);
+saveLaunch(launch);
 
 function existsLaunchWithId(launchId) {
   return launches.has(launchId);
@@ -25,19 +29,53 @@ function existsLaunchWithId(launchId) {
 Seperation of concerns: Our controllers should only deal with request and response
 All data releated tasks are performed by the model
 */
-function getAllLaunches() {
-  return Array.from(launches.values());
+async function getAllLaunches() {
+  return await launchesDb.find(
+    {},
+    {
+      _id: 0,
+      __v: 0,
+    }
+  );
 }
 
-function addNewLaunch(launch) {
-  latestFlightNumber++;
-  launches.set(latestFlightNumber, {
-    ...launch,
+async function saveLaunch(launch) {
+  const planet = await planets.findOne({ keplerName: launch.target });
+
+  if (!planet) {
+    throw new Error("Launch target not found in db");
+  }
+
+  await launchesDb.findOneAndUpdate(
+    {
+      flightNumber: launch.flightNumber,
+    },
+    launch,
+    {
+      upsert: true,
+    }
+  );
+}
+
+async function getLatestFlightNumber() {
+  const launch = await launchesDb.findOne().sort("-flightNumber");
+
+  if (!launches) return DEFAULT_FLIGHT_NUMBER;
+
+  return launch.flightNumber;
+}
+
+async function scheduleNewLaunch(launch) {
+  const latestFlightNumber = (await getLatestFlightNumber()) + 1;
+
+  const newLaunch = Object.assign(launch, {
     flightNumber: latestFlightNumber,
-    customer: ["ZTM", "NASA"],
+    customers: ["ZTM", "NASA"],
     upcoming: true,
     success: true,
   });
+
+  await saveLaunch(newLaunch);
 }
 
 function abortLaunchById(launchId) {
@@ -50,7 +88,7 @@ function abortLaunchById(launchId) {
 
 module.exports = {
   getAllLaunches,
-  addNewLaunch,
+  scheduleNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
 };

@@ -1,6 +1,6 @@
 const {
   getAllLaunches,
-  addNewLaunch,
+  scheduleNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
 } = require("../../models/launches.models");
@@ -9,11 +9,11 @@ const {
 //iterables are LIKE arrays, but not array
 //iterables cannot be json serialized
 //Array.from(launches.value()) converts it to an array
-function httpGetAllLaunches(req, res) {
-  return res.status(200).json(getAllLaunches());
+async function httpGetAllLaunches(req, res) {
+  return res.status(200).json(await getAllLaunches());
 }
 
-function httpAddNewLaunch(req, res) {
+async function httpAddNewLaunch(req, res) {
   const launch = req.body;
   //in json data, always pass date as a string and then convert it in code
 
@@ -38,7 +38,12 @@ function httpAddNewLaunch(req, res) {
     });
   }
 
-  addNewLaunch(launch);
+  try {
+    await scheduleNewLaunch(launch);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
   return res.status(201).json(launch);
 }
 

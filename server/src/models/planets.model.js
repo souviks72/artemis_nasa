@@ -45,7 +45,13 @@ function loadPlanetsData() {
 }
 
 async function getAllPlanets() {
-  return await planets.find({}); //all docs will be returned if search obj is empty
+  return await planets.find(
+    {},
+    {
+      _id: 0,
+      __v: 0,
+    }
+  ); //all docs will be returned if search obj is empty
 }
 /*
   We can also find data by certain criteria and use projections to return specific fields from the entire doc
