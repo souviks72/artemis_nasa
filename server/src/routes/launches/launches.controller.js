@@ -3,7 +3,7 @@ const {
   scheduleNewLaunch,
   existsLaunchWithId,
   abortLaunchById,
-} = require("../../models/launches.models");
+} = require("../../models/launches.model");
 
 //launches is a Js Map, launches.values() returns an iterable
 //iterables are LIKE arrays, but not array
@@ -47,19 +47,29 @@ async function httpAddNewLaunch(req, res) {
   return res.status(201).json(launch);
 }
 
-function httpAbortLaunch(req, res) {
+async function httpAbortLaunch(req, res) {
   const launchId = +req.params.id;
 
-  //if launch id does not exist
-  if (!existsLaunchWithId(launchId)) {
-    return res.status(404).json({
-      error: "Launch not found",
-    });
-  }
+  try {
+    const launch = await existsLaunchWithId(launchId);
+    if (!launch) {
+      return res.status(404).json({
+        error: "Launch not found",
+      });
+    }
 
-  //if launch exists
-  const aborted = abortLaunchById(launchId);
-  return res.status(200).json(aborted);
+    const isLaunchAborted = await abortLaunchById(launchId);
+    if (!isLaunchAborted) {
+      return res.status(400).json({
+        error: "Launch not aborted",
+      });
+    }
+    return res.status(200).json({
+      ok: true,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 }
 
 module.exports = {

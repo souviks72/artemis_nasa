@@ -4,8 +4,7 @@ const morgan = require("morgan");
 
 const app = express();
 
-const planetsRouter = require("./routes/planets/planets.router");
-const launchesRouter = require("./routes/launches/launches.router");
+const api = require("./routes/api");
 
 app.use(
   cors({
@@ -17,8 +16,7 @@ app.use(morgan("combined"));
 app.use(express.json()); //allows express to accept request body in json format
 //data is available on req.body object
 
-app.use("/planets", planetsRouter);
-app.use("/launches", launchesRouter);
+app.use("/v1", api);
 
 module.exports = app;
 //udbNLfawyszn0oUM
