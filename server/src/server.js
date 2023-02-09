@@ -1,5 +1,7 @@
 const http = require("http");
 
+require("dotenv").config(); //loads config values into process.env from .env file
+
 const { loadPlanetsData } = require("./models/planets.model");
 const { loadLaunchesData } = require("./models/launches.model");
 

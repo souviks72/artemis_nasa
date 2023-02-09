@@ -15,7 +15,6 @@ async function httpGetLaunches() {
 }
 
 async function httpSubmitLaunch(launch) {
-  console.log(launch);
   try {
     return await fetch(`${API_URL}/launches`, {
       method: "POST",

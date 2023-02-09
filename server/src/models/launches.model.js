@@ -5,32 +5,14 @@ const planets = require("./planets.mongo");
 
 const DEFAULT_FLIGHT_NUMBER = 100;
 
-const launches = new Map();
-
-let latestFlightNumber = 100;
-
-const launch = {
-  flightNumber: 100, //flight_number
-  mission: "Kepler Exploration X", //name
-  rocket: "Exploer IS1", //rocket.name
-  launchDate: new Date("December 27, 2030"), //date_local
-  target: "Kepler-442 b", //not applicable
-  customers: ["ZTM", "NASA"], //payload.customers for each payload
-  upcoming: true, //upcoming
-  success: true, //success
-};
-
-//launches.set(launch.flightNumber, launch);
-saveLaunch(launch);
-
 const SPACEX_API_URL = "https://api.spacexdata.com/v4/launches/query";
 
-async function loadLaunchesData() {
+async function populateLaunches() {
   console.log("Downloading launch data");
   const response = await axios.post(SPACEX_API_URL, {
-    pagination: false,
     query: {},
     options: {
+      pagination: false,
       populate: [
         {
           path: "rocket",
@@ -48,6 +30,11 @@ async function loadLaunchesData() {
     },
   });
 
+  if (response.status !== 200) {
+    console.log("Problem downloading SpaceX launches");
+    throw new Error("Launch data download failed");
+  }
+
   const launchDocs = response.data.docs;
   for (const launchDoc of launchDocs) {
     const payloads = launchDoc["payloads"];
@@ -64,35 +51,50 @@ async function loadLaunchesData() {
       customers,
     };
 
-    console.log(launch);
+    await saveLaunch(launch);
   }
 }
 
+async function loadLaunchesData() {
+  const firstLaunch = await findLaunch({
+    flightNumber: 1,
+    rocket: "Falcon 1",
+    mission: "FalconSat",
+  });
+  if (firstLaunch) {
+    console.log("Launch already exists");
+  } else {
+    await populateLaunches();
+  }
+}
+
+async function findLaunch(filter) {
+  return await launchesDb.findOne(filter);
+}
+
 async function existsLaunchWithId(launchId) {
-  return await launchesDb.findOne({ flightNumber: launchId });
+  return await findLaunch({ flightNumber: launchId });
 }
 
 /*
 Seperation of concerns: Our controllers should only deal with request and response
 All data releated tasks are performed by the model
 */
-async function getAllLaunches() {
-  return await launchesDb.find(
-    {},
-    {
-      _id: 0,
-      __v: 0,
-    }
-  );
+async function getAllLaunches(skip, limit) {
+  return await launchesDb
+    .find(
+      {},
+      {
+        _id: 0,
+        __v: 0,
+      }
+    )
+    .sort({ flightNumber: 1 }) //-1 for descending order
+    .skip(skip)
+    .limit(limit);
 }
 
 async function saveLaunch(launch) {
-  const planet = await planets.findOne({ keplerName: launch.target });
-
-  if (!planet) {
-    throw new Error("Launch target not found in db");
-  }
-
   await launchesDb.findOneAndUpdate(
     {
       flightNumber: launch.flightNumber,
@@ -113,6 +115,12 @@ async function getLatestFlightNumber() {
 }
 
 async function scheduleNewLaunch(launch) {
+  const planet = await planets.findOne({ keplerName: launch.target });
+
+  if (!planet) {
+    throw new Error("Launch target not found in db");
+  }
+
   const latestFlightNumber = (await getLatestFlightNumber()) + 1;
 
   const newLaunch = Object.assign(launch, {

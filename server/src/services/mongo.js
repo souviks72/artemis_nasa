@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
-const MONGO_URL =
-  "mongodb+srv://nasa_api:6n9NDkm8hnBB43zx@cluster0.n8jnlt1.mongodb.net/nasa?retryWrites=true&w=majority";
+require("dotenv").config(); //to allow test env to access config values as well(when connecting to mongo)
+
+const MONGO_URL = process.env.MONGO_URL;
 
 //all event listeners have this once() function which listens for the event only once
 // listener.on() will listen for this event forever
